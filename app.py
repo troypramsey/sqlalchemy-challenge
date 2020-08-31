@@ -28,7 +28,6 @@ app = Flask(__name__)
 
 # Homepage route
 @app.route("/")
-
 def homepage():
     return (
         f"Available Routes:<br/>"
@@ -39,10 +38,24 @@ def homepage():
         f"<a href='/api/v1.0/<start>/<end>'>start_to_end</a><br/>")
 
 # Precipitation summary route
+@app.route("/api/v1.0/precipitation")
 def precipitation():
     session = Session(engine)
     
     results = session.query(Measurement.date, func.sum(Measurement.prcp).label('precipitation')).filter(Measurement.date >= '2016-08-23').group_by(Measurement.date)
+    
+    session.close()
+    
+    all_results = list(np.ravel(results))
+    
+    return jsonify(all_results)
+
+# Stations route
+@app.route("/api/v1.0/stations")
+def stations():
+    session = Session(engine)
+    
+    results = session.query(Station.id, Station.station, func.count(Measurement.id)).filter(Station.station==Measurement.station).group_by(Station.station)
     
     session.close()
     
