@@ -62,3 +62,16 @@ def stations():
     all_results = list(np.ravel(results))
     
     return jsonify(all_results)
+
+# Temperature route
+@app.route("/api/v1.0/tobs")
+def temperature():
+    session = Session(engine)
+    
+    results = session.query(Station.station, Measurement.tobs).filter(Station.station==Measurement.station).filter(Station.id == 7).filter(Measurement.date >= '2016-08-23')
+    
+    session.close()
+    
+    all_results = list(np.ravel(results))
+    
+    return jsonify(all_results)
