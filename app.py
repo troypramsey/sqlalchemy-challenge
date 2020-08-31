@@ -83,7 +83,43 @@ def temperature():
         all_results.append(item_dict)
     
     return jsonify(all_results)
+
+@app.route("/api/v1.0/<start>")
+def start_to_present(start):
+    session = Session(engine)
     
+    results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), \
+                            func.avg(Measurement.tobs)).filter(Station.station==Measurement.station).filter(Measurement.date >= start).all()
+    
+    session.close()
+    
+    all_results = []
+    for item in results:
+        item_dict = {}
+        item_dict['TMIN'] = item[0]
+        item_dict['TMAX'] = item[1]
+        item_dict['TAVG'] = item[2]
+        all_results.append(item_dict)
+        
+    return jsonify(all_results)
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_to_end(start, end):
+    session = Session(engine)
+    
+    results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), \
+                            func.avg(Measurement.tobs)).filter(Station.station==Measurement.station).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    
+    session.close()
+    
+    all_results = []
+    for item in results:
+        item_dict = {}
+        item_dict['TMIN'] = item[0]
+        item_dict['TMAX'] = item[1]
+        item_dict['TAVG'] = item[2]
+        all_results.append(item_dict)
+        
     return jsonify(all_results)
 
 if __name__ == '__main__':
