@@ -11,7 +11,7 @@ from sqlalchemy import create_engine, func
 from flask import Flask, jsonify
 
 # Build database
-engine = create_engine("sqlite:///../Resources/hawaii.sqlite")
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 
 # Reflecting database using ORM
 Base = automap_base()
@@ -42,11 +42,15 @@ def homepage():
 def precipitation():
     session = Session(engine)
     
-    results = session.query(Measurement.date, func.sum(Measurement.prcp).label('precipitation')).filter(Measurement.date >= '2016-08-23').group_by(Measurement.date)
+    results = session.query(Measurement.date, func.sum(Measurement.prcp).label('precipitation')).filter(Measurement.date >= '2016-08-23').group_by(Measurement.date).all()
     
     session.close()
     
-    all_results = list(np.ravel(results))
+    all_results = []
+    for item in results:
+        item_dict = {}
+        item_dict[str(item[0])] = item[1]
+        all_results.append(item_dict)
     
     return jsonify(all_results)
 
@@ -55,7 +59,7 @@ def precipitation():
 def stations():
     session = Session(engine)
     
-    results = session.query(Station.id, Station.station, func.count(Measurement.id)).filter(Station.station==Measurement.station).group_by(Station.station)
+    results = session.query(Station.station).all()
     
     session.close()
     
@@ -68,10 +72,19 @@ def stations():
 def temperature():
     session = Session(engine)
     
-    results = session.query(Station.station, Measurement.tobs).filter(Station.station==Measurement.station).filter(Station.id == 7).filter(Measurement.date >= '2016-08-23')
+    results = session.query(Measurement.date, Measurement.tobs).filter(Station.station==Measurement.station).filter(Station.id == 7).filter(Measurement.date >= '2016-08-23').all()
     
     session.close()
     
-    all_results = list(np.ravel(results))
+    all_results = []
+    for item in results:
+        item_dict = {}
+        item_dict[str(item[0])] = item[1]
+        all_results.append(item_dict)
     
     return jsonify(all_results)
+    
+    return jsonify(all_results)
+
+if __name__ == '__main__':
+    app.run(debug=True)
